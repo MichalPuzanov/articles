@@ -16,8 +16,7 @@ Dotenv was designed primarily to manage sensitive configuration values, such as 
 
 A common practical question is how collaborators can know which variables must be defined. The standard solution is to maintain a template file that documents required keys and expected formats.
 
-- The real .env file
-
+- The real .env file<br>
     Stored only on the local machine (for example, excluded through .gitignore).
     
 <pre>DATABASE_URL=postgresql://admin:super_secret_password_123@localhost:5432/mydb
@@ -25,8 +24,7 @@ STRIPE_API_KEY=sk_live_51Nx...real_secret_key...
 DEBUG=True
 </pre>
 
-- The template .env.example file
-
+- The template .env.example file<br>
     Safe to commit to source control.
 
 <pre># This is a template. Copy this to a file named '.env' and fill in your real values.
@@ -280,7 +278,7 @@ Manually converting every environment string into types such as int, float, or b
 This package is not included in the Python standard library and must be installed separately.
 
 #### Install the package with pip
-pip install pydantic-settings
+<pre>pip install pydantic-settings</pre>
 
 #### The .env file
 <pre>DEBUG=true
@@ -421,3 +419,5 @@ The following recommendations are strongly advised for maintainable and secure d
 6. For larger applications, prefer schema-driven configuration with pydantic-settings to centralise parsing, validation, and default handling.
 
 In summary, advanced Dotenv usage is most effective when combined with disciplined configuration design. Organisations that standardise these patterns can reduce runtime errors, strengthen secret hygiene, and improve reproducibility across development, staging, and production environments.
+
+Did this help you transition to Dotenv? Let me know in the comments below, and don't forget to drop a like if you enjoyed the read! Thank you.
