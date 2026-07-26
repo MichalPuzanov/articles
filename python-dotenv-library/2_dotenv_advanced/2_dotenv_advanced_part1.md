@@ -276,7 +276,7 @@ Manually converting every environment string into types such as int, float, or b
 This package is not included in the Python standard library and must be installed separately.
 
 #### Install the package with pip
-pip install pydantic-settings
+<pre>pip install pydantic-settings</pre>
 
 #### The .env file
 <pre>DEBUG=true
@@ -417,3 +417,5 @@ The following recommendations are strongly advised for maintainable and secure d
 6. For larger applications, prefer schema-driven configuration with pydantic-settings to centralise parsing, validation, and default handling.
 
 In summary, advanced Dotenv usage is most effective when combined with disciplined configuration design. Organisations that standardise these patterns can reduce runtime errors, strengthen secret hygiene, and improve reproducibility across development, staging, and production environments.
+
+Did this help you transition to Dotenv? Let me know in the comments below, and don't forget to drop a like if you enjoyed the read! Thank you.
