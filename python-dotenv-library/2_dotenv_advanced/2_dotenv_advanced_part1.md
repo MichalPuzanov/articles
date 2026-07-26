@@ -37,12 +37,12 @@ DEBUG=False
 A multi-environment workflow enables a Python application to select configuration automatically based on its runtime context (for example, local development, staging, or production). Instead of manually editing a single .env file during deployment, separate files are maintained for each environment, and a selector variable, commonly APP_ENV, determines which file is loaded. The following example demonstrates this pattern in practice.
 
 #### Step 1: Create environment-specific files
-##### env.development - for local development
+#### env.development - for local development
 <pre>DATABASE_URL=postgresql://localhost/dev_db
 DEBUG=True
 </pre>
 
-##### .env.production - for production deployment
+#### .env.production - for production deployment
 <pre>DATABASE_URL=postgresql://secure-cloud-cluster/prod_db
 DEBUG=False
 </pre>
