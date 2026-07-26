@@ -16,16 +16,16 @@ Dotenv was designed primarily to manage sensitive configuration values, such as 
 
 A common practical question is how collaborators can know which variables must be defined. The standard solution is to maintain a template file that documents required keys and expected formats.
 
-- The real .env file<br>
-    Stored only on the local machine (for example, excluded through .gitignore).
+#### The real .env file
+Stored only on the local machine (for example, excluded through .gitignore).
     
 <pre>DATABASE_URL=postgresql://admin:super_secret_password_123@localhost:5432/mydb
 STRIPE_API_KEY=sk_live_51Nx...real_secret_key...
 DEBUG=True
 </pre>
 
-- The template .env.example file<br>
-    Safe to commit to source control.
+#### The template .env.example file
+Safe to commit to source control.
 
 <pre># This is a template. Copy this to a file named '.env' and fill in your real values.
 DATABASE_URL=postgresql://username:password@localhost:5432/database_name
@@ -37,14 +37,12 @@ DEBUG=False
 A multi-environment workflow enables a Python application to select configuration automatically based on its runtime context (for example, local development, staging, or production). Instead of manually editing a single .env file during deployment, separate files are maintained for each environment, and a selector variable, commonly APP_ENV, determines which file is loaded. The following example demonstrates this pattern in practice.
 
 #### Step 1: Create environment-specific files
-- .env.development - for local development
-
+#### env.development - for local development
 <pre>DATABASE_URL=postgresql://localhost/dev_db
 DEBUG=True
 </pre>
 
-- .env.production - for production deployment
-
+#### .env.production - for production deployment
 <pre>DATABASE_URL=postgresql://secure-cloud-cluster/prod_db
 DEBUG=False
 </pre>
