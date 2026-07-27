@@ -1,2 +1,4 @@
 python-dotenv
+python-dotenv[cli]
 pydantic-settings
+marshmallow
