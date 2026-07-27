@@ -18,7 +18,8 @@ A common practical question is how collaborators can know which variables must b
 
 #### The real .env file
 Stored only on the local machine (for example, excluded through .gitignore).
-    
+
+*The real .env file*  
 <pre>DATABASE_URL=postgresql://admin:super_secret_password_123@localhost:5432/mydb
 STRIPE_API_KEY=sk_live_51Nx...real_secret_key...
 DEBUG=True
@@ -27,6 +28,7 @@ DEBUG=True
 #### The template .env.example file
 Safe to commit to source control.
 
+*The template .env.example*
 <pre># This is a template. Copy this to a file named '.env' and fill in your real values.
 DATABASE_URL=postgresql://username:password@localhost:5432/database_name
 STRIPE_API_KEY=your_stripe_test_key_here
@@ -37,12 +39,12 @@ DEBUG=False
 A multi-environment workflow enables a Python application to select configuration automatically based on its runtime context (for example, local development, staging, or production). Instead of manually editing a single .env file during deployment, separate files are maintained for each environment, and a selector variable, commonly APP_ENV, determines which file is loaded. The following example demonstrates this pattern in practice.
 
 #### Step 1: Create environment-specific files
-#### env.development - for local development
+*env.development - for local development*
 <pre>DATABASE_URL=postgresql://localhost/dev_db
 DEBUG=True
 </pre>
 
-#### .env.production - for production deployment
+*.env.production - for production deployment*
 <pre>DATABASE_URL=postgresql://secure-cloud-cluster/prod_db
 DEBUG=False
 </pre>
@@ -176,7 +178,7 @@ Repeated literals in .env files reduce maintainability. Dotenv supports variable
 *Problem:* If a core database value changes, multiple duplicated strings may require manual updates.
 *Solution:* Define core components once and construct composite values dynamically.
 
-#### The .env file
+*The .env file*
 <pre>DB_USER=postgres_admin
 DB_PASS=SuperSecret123
 DB_HOST=localhost
@@ -206,12 +208,12 @@ print(os.environ.get("LOCAL_DATABASE_URL"))
 ### The string-to-boolean pitfall
 One of the most common issues in environment-based configuration is that all environment values are strings at read time. This behaviour frequently causes logical errors when developers expect textual values such as "true" or "false" to behave as native booleans. Although this topic was introduced in the previous article, it warrants emphasis because it remains a frequent source of bugs.
 
-#### The .env file
+*The .env file*
 <pre>DEBUG=true
 ENABLE_SIGNUPS=false
 </pre>
 
-#### The Python code
+*The Python code*
 
 
 ```python
@@ -230,6 +232,8 @@ if os.environ.get("ENABLE_SIGNUPS"):
 
 This behaviour follows Python's truth-value rules for strings: any non-empty string evaluates to True, whereas only an empty string evaluates to False.
 
+*The Python code*
+
 
 ```python
 value1 = "true"
@@ -247,7 +251,7 @@ print(bool(value1), bool(value2), bool(value3), bool(value4), bool(value5))
 A robust approach is to use a utility that converts string representations of booleans into native boolean types.
 In this example, JSON parsing is used for deterministic conversion.
 
-#### The Python code
+*The Python code*
 
 
 ```python
@@ -275,16 +279,16 @@ Manually converting every environment string into types such as int, float, or b
 
 This package is not included in the Python standard library and must be installed separately.
 
-#### Install the package with pip
+*Install the package with pip*
 <pre>pip install pydantic-settings</pre>
 
-#### The .env file
+*The .env file*
 <pre>DEBUG=true
 ENABLE_SIGNUPS=false
 TIMEOUT_LIMIT=4.5
 </pre>
 
-#### The Python code
+*The Python code*
 
 
 
@@ -327,7 +331,7 @@ except Exception as e:
 
 As shown above, values are also accessible through standard Python environment access patterns, while Pydantic simultaneously provides structured parsing, validation, and default handling.
 
-#### The Python code - validation example
+*The Python code - validation example*
 
 
 ```python
@@ -364,7 +368,7 @@ except Exception as e:
         For further information visit https://errors.pydantic.dev/2.13/v/int_parsing
 
 
-#### The Python code - default value example
+*The Python code - default value example*
 
 
 ```python
