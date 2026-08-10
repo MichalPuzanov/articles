@@ -1,35 +1,35 @@
 # Asyncio Using Traditional Python Code
 
 ## Introduction
-In this article we are going to benchmark using Python library `asyncio` with traditional Python code in different enviroments. We know that `asyncio` is very good to use with Python libraries which support asynchronous programming. It really helps when we can work asynchronously when we fetch data from different sources or wait for hardware responses. Basically ever time our application hits a bottleneck caused by network latency, third-party server responces or heavy database communication. `asyncio` allows single thread to handle thousands of active operations at the same time. It is fantastic tool which can help as forexample with:
-- **High-performance web scrapers and crawlers:** `asyncio` lets you fire off hundreds of web requests at once using async libraries like httpx or aiohttp. The program sits back, monitors the event loop, and processes each webpage the exact millisecond its data finishes downloading.
-- ** Real-time chat apps and websocket servers:** Instead of creating 5,000 heavy operating system threads (which would completely overwhelm your computer's memory), `asyncio` maintains all 5,000 connections inside a single thread. It consumes almost no idle CPU power while waiting for incoming chat messages.
-- **Discord bots, telegram bots, slack integration:** Popular framework libraries are built directly on top of `asyncio`. A single bot instance can listen for events across thousands of servers simultaneously without dropping any incoming commands.
-- **Microservices and API aggregators like FastAPI:** Using tools like asyncio.TaskGroup inside a FastAPI gateway service, you can query the database and the two external APIs concurrently. The total response time drops from the sum of all three delays down to the time of whichever single request takes the longest. 
+This article examines the use of the Python `asyncio` library alongside traditional synchronous code in different environments. The `asyncio` library is particularly well suited to applications that interact with Python libraries supporting asynchronous programming. It provides the greatest benefit whenever an application encounters a bottleneck caused by network latency, third-party server responses, or heavy database communication. `asyncio` allows a single thread to handle thousands of active operations concurrently. Representative use cases include:
+- **High-performance web scrapers and crawlers:** `asyncio` enables hundreds of web requests to be dispatched simultaneously using async-compatible libraries such as `httpx` or `aiohttp`. The event loop monitors all pending requests and processes each response the moment its data arrives.
+- **Real-time chat applications and WebSocket servers:** Rather than creating 5,000 heavyweight operating-system threads, `asyncio` maintains all 5,000 connections within a single thread, consuming negligible CPU time whilst waiting for incoming messages.
+- **Discord bots, Telegram bots, and Slack integrations:** Popular framework libraries are built directly on top of `asyncio`, allowing a single bot instance to listen for events across thousands of servers simultaneously without dropping any incoming commands.
+- **Microservices and API aggregators such as FastAPI:** Using constructs such as `asyncio.TaskGroup` inside a FastAPI gateway, it is possible to query a database and multiple external APIs concurrently. The total response time is thereby reduced from the sum of all individual delays to the duration of the single slowest request.
 
-Today we are going to see examples and possible solutions for issues with them.
+The following sections present practical examples and examine potential issues that arise in each scenario.
 
-## GIL 
-Python was traditionally used `GIL` - Global Interpreter Lock. Even our environment is offering multiple CPU cores, we are still able to use just one. Of course it is making our life easier, but major issue is performance of our code. Another issue is that we can have some traditional Python synchronised code, can we make it faster ?
+## GIL
+Python has traditionally employed the `GIL` (Global Interpreter Lock), which restricts execution to a single CPU core at any given moment, even when multiple cores are available. Whilst this simplifies memory management, the primary drawback concerns performance. A further consideration is whether existing synchronous code can be accelerated without a full rewrite.
 
-## Bypass the GIL Python < 3.13
-If we need true parallel processing across multiple CPU cores, we have three primary options:
-- **Use multiprocessing:** Instead of `treading`, we use the multiprocessing module. This spawns entirely separate Python processes, each with its own interpreter, memory spacen and `GIL`.
-- **Use C-extensions:** Libraties like `numpy`, `scipy`, `pandas` do they heavy computing in C/C++, which releases the `GIL` during execution.
-- **Use an alternative Python:** PyPy, Jython, or IronPython handle execution differently, though they lack the full library ecosysten of CPython. 
+## Bypassing the GIL in Python < 3.13
+Where true parallel processing across multiple CPU cores is required, three principal options are available:
+- **Use multiprocessing:** Rather than `threading`, the `multiprocessing` module spawns entirely separate Python processes, each with its own interpreter, memory space, and `GIL`.
+- **Use C extensions:** Libraries such as `numpy`, `scipy`, and `pandas` perform heavy computation in C/C++, releasing the `GIL` during execution.
+- **Use an alternative Python implementation:** PyPy, Jython, or IronPython handle execution differently, though they lack the full library ecosystem of CPython.
 
-## Bypass the GIL Python => 3.13
-The developers of CPython (standard Python interpreter), started to work on "no GIL" solution first in Python version 3.13.
+## Bypassing the GIL in Python >= 3.13
+The CPython developers began work on a GIL-free solution with Python 3.13.
 
-- **Python 3.13 (October 2024):** Introduced Experimental Support. The standard download still uses the GIL by default. To run without it, you must explicitly install or compile the special "free-threaded" build (which creates a python3.13t executable).
-- **Python 3.14 (October 2025):** The free-threaded build moved beyond experimental status to become Officially Supported but remains an optional download.
-- **Future Long-Term Goal:** The Python Steering Council plans to eventually make the free-threaded (No-GIL) mode the default option, completely removing the GIL from standard builds once third-party libraries have fully adapted.
+- **Python 3.13 (October 2024):** Experimental support was introduced. The standard distribution still enables the GIL by default; to run without it, the special free-threaded build must be explicitly installed or compiled (producing a `python3.13t` executable).
+- **Python 3.14 (October 2025):** The free-threaded build progressed beyond experimental status to become officially supported, though it remains an optional download.
+- **Long-term goal:** The Python Steering Council intends to make free-threaded (No-GIL) mode the default, removing the GIL from standard builds once third-party libraries have fully adapted.
 
-This will affect significantly using `asyncio` even with our traditional Python sychronous code. Let's continue with practical coding.
+These changes have significant implications for the use of `asyncio` with traditional synchronous Python code, as explored in the sections below.
 
-## Practical examples
-### Verify the installation
-The following script can be used to confirm that asyncio is available in the environment. Python 3.4 or newer is required. We are now running Python version 3.12.
+## Practical Examples
+### Verify the Installation
+The following script confirms that `asyncio` is available in the current environment. Python 3.4 or newer is required. The examples in this section use Python 3.12.
 
 
 ```python
@@ -42,8 +42,8 @@ print(f'Your asyncio version is tied to Python {sys.version.split()[0]}')
     Your asyncio version is tied to Python 3.12.12
 
 
-### Initialise runtime
-Because this article is presented in a Jupyter notebook, where an event loop is already running, we need to use the `nest_asyncio` library to reuse the existing event loop.
+### Initialise Runtime
+As this article is presented in a Jupyter notebook, where an event loop is already running, the `nest_asyncio` library is used to patch and reuse the existing event loop.
 
 
 ```python
@@ -89,7 +89,7 @@ main()
     Execution time: 6.001220464706421 seconds
 
 
-As we expected program took roughly 6 seconds. Now we are going to change the code to asynchronous and use `asyncio`.
+As expected, the program ran for approximately 6 seconds. The following example converts the same logic to use native coroutines with `asyncio`.
 
 *using asyncio*
 
@@ -125,7 +125,7 @@ asyncio.run(main())
     Execution time: 2.002875328063965 seconds
 
 
-As we can see know program took roughly 2 seconds. Wow it is fantastic, but bear in mind we needed to rebuild the code to make it asynchronous. Now let's have a look what would happen if we don't change original code and run it under `asyncio`.
+As observed, the program completed in approximately 2 seconds. It should be noted, however, that the code required complete rewriting to use native coroutines. The following example examines what occurs when the original synchronous code is executed under `asyncio` without any modification.
 
 *python code running under asyncio*
 
@@ -161,18 +161,18 @@ asyncio.run(main())
     Execution time: 6.001770734786987 seconds
 
 
-We are back to 6 seconds. All that changes we did, don't have any effect, the code is running like there is no `asyncio`. So basically it means we need to all our code change to asynchronous if we need use `asyncio` advantage.
+Execution returns to approximately 6 seconds. The changes applied have no effect; the code runs as though `asyncio` were absent. This demonstrates that a complete conversion to native coroutines is necessary in order to benefit from the `asyncio` event loop.
 
-| **normal synchronous code** | **asynchronous equivalent** | 
-|-----------------------------|-----------------------------|
+| **Synchronous code** | **Asynchronous equivalent** |
+|---|---|
 | `time.sleep(2)` | `await asyncio.sleep(2)` |
-| `requests.get(url)` | `await httpx.AsincClient().get(url)` or use `aiohttp` |
+| `requests.get(url)` | `await httpx.AsyncClient().get(url)` or use `aiohttp` |
 | `open('file.txt', 'r')` | `await aiofiles.open('file.txt', 'r')` |
-| standard database drivers | async drivers or orm like `SQLAlchemy` |
+| Standard database drivers | Async drivers or an ORM such as `SQLAlchemy` |
 
-The solution for that is to run synchronous tasks in different thread. Our code runs sleep for 1 second roughly 50 times, but final time is much less no matter if we run sync or async method.
+An alternative approach is to run synchronous tasks in a separate thread. The following example mixes synchronous tasks offloaded to threads with native coroutines, demonstrating how the two may be combined.
 
-*run sync tasks in different thread*
+*run sync tasks in a separate thread*
 
 
 ```python
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     Execution time: 11.00990891456604 seconds
 
 
-The result is 11 seconds, it looks fantastic ! Sort of, because we are using dummy sleep function. It means CPU doesn't do anything, just sleep and there is plenty of time to run another task. Let's replace our dummy sleep method with heavy computing time method. Tge method should last exactly 1 second to run.
+The result of approximately 11 seconds is encouraging; however, this outcome reflects the use of a dummy sleep function. Since the CPU is idle during each sleep interval, there is ample time for the event loop to schedule other tasks. The following example replaces the sleep-based simulation with a genuinely CPU-intensive worker, calibrated to run for exactly 1 second.
 
 *heavy workload without asyncio*
 
@@ -302,7 +302,7 @@ main()
     Accumulator per second: 8.2252795434496 M/s
 
 
-We ran synchronous code, there were 82 million accumulators created in 10 seconds, so it means roughly 8.2 millions per second. Now we are going to run it using threads. Remember no change to code, still using synchronous code, just run it under asyncio.
+The synchronous baseline produced approximately 82 million accumulator increments over 10 seconds, equivalent to roughly 8.2 million per second. The following example executes the same unmodified synchronous function via `asyncio.to_thread()`, with no changes to the worker code.
 
 *heavy workload with asyncio using threads*
 
@@ -385,10 +385,10 @@ asyncio.run(main())
     Accumulator per second: 7.7645057426905835 M/s
 
 
-Wow it's fantastic, it ran just 1.6 second, but wait the moment, it created just 12.7 millions accumulators, which means 7.77 million accumulators per second. The final performance was worse then in previous synchronised example! So if it runs 10 secounds it will create less total accumulators, it means computer power is smaller in asynchronous that synchronous? It's version of Python we have, we are doing that test on 3.12., but there is GIL. Still this solution has very good advantage if you want to use synchronous and asynchronous code together, but doesn't bring any computing power.
+The program completed in approximately 1.6 seconds; however, only 12.7 million accumulator increments were produced, corresponding to approximately 7.77 million per second — marginally worse than the sequential baseline of 8.2 million per second. This indicates that raw computational throughput was lower under the threaded-asyncio approach than in the purely synchronous case. The explanation lies in the Python version: Python 3.12 still enforces the GIL, which prevents threads from executing Python bytecode in parallel. This approach nevertheless offers a clear advantage when combining synchronous and asynchronous code, even though it does not increase raw computational throughput.
 
-### Using Python =>3.13 t
-We need to use Python interpreter =>3.13, and it needs to be with suffix `t` . In time of writing the latest available version which support threads was 3.14.7t. So we are going to use it now for our code.
+### Using Python >= 3.13t
+A Python interpreter version 3.13 or later with the free-threaded suffix `t` is required for the following examples. At the time of writing, the latest available free-threaded build was Python 3.14.7t, which is used for all subsequent benchmarks.
 
 *check current asyncio version*
 
@@ -488,7 +488,7 @@ main()
     Accumulator per second: 6.284796598414879 M/s
 
 
-We ran synchronous code, in Python 3.14.7t interpreter. There were 63 million accumulators created in 10 seconds, so it means roughly 6.3 millions per second. This significantly lower than in Python 3.12 interpreter. Now we are going to run it using threads. Remember no change to code, still using synchronous code, just run it under asyncio.
+The synchronous baseline on the Python 3.14.7t interpreter produced approximately 63 million accumulator increments over 10 seconds, equivalent to roughly 6.3 million per second. This is significantly lower than the Python 3.12 result, which is attributable to the additional overhead introduced by the free-threaded runtime. The following example executes the same unmodified synchronous function via `asyncio.to_thread()`, as before.
 
 *heavy workload with asyncio using threads*
 
@@ -543,7 +543,6 @@ async def main():
     
 asyncio.run(main())
 ```
-
 ```
 Starting the program...
 🔥 [1] CPU computation started (consuming 100% of its thread)...
@@ -572,18 +571,18 @@ Execution time: 1.1771600246429443 seconds
 Accumulator per second: 23.26734974567943 M/s
 ```
 
-We can see now these values: 27 millions of acummulators, in 1.18 seconds, 23.3 million accumulators per second, it is almost 3 times more using threads in Python interpreter 3.14.7t than in old 3.12.12 where GIL was in charge.
+The results show 27 million accumulator increments produced in 1.18 seconds, yielding approximately 23.3 million per second — representing a nearly threefold improvement over the Python 3.12 result, where the GIL serialised thread execution.
 
 ### Using threads safely by asyncio.to_thread()
 
 It is generally safe to run different Python methods using `asyncio.to_thread()`, but it depends heavily on your Python version and whether those methods modify shared data or not.
 
-In modern Python >= 3.13 t, the rules for threading changed dramatically due to introduction of free-threaded Python without GIL. There are still some issues we have bear in mind to keep our code thread-safe.
+In modern Python >= 3.13t, the rules for threading changed dramatically due to the introduction of free-threaded Python without the GIL. There are still some issues we must bear in mind to keep our code thread-safe.
 
 1. **Pure calculation and read-only tasks ( always safe ):** If the different methods only calculate data, read local variables, or perform network I/O, it is 100% safe. Because `asyncio.to_thread() automatically grabs an isolated worker thread from an internal thread pool, running independent methods side-by-side will not cause conflicts.
 2. **Modifying global data or shared objects ( dangerous ):** If our methods try to modify the same global variable, list, dictionary, database object etc., at the same time, we will encounter data corruption or race conditions.
     - older Python (with GIL): The GIL protects Python's internal memory, but your application logic can still break if two threads try to update a dictionary key simultaneously.
-    - free-threaded Python: Without GIL, threads can execute true concurrent modifications. Modifiying unprotected custom objects or global states sumultaneously will crash or corrupt data.
+    - free-threaded Python: Without the GIL, threads can execute true concurrent modifications. Modifying unprotected custom objects or global states simultaneously will crash or corrupt data.
 
 *dangerous way*
 ```
@@ -645,4 +644,4 @@ Throughout this article we have explored the relationship between `asyncio` and 
 
 As the Python ecosystem continues to mature around the free-threaded interpreter, the boundary between async and threaded programming will blur further. For now, understanding which version of the interpreter you are targeting — and whether your bottleneck is I/O latency or raw CPU throughput — is the most important decision you can make before reaching for `asyncio`.
 
-Did this article help you? Let me know in the comments below, and don't forget to drop a like if you enjoyed the read! Thank you.
+Further reading on the `asyncio` library is available in the official Python documentation at [docs.python.org/3/library/asyncio.html](https://docs.python.org/3/library/asyncio.html).
