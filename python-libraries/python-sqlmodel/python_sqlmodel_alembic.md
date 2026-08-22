@@ -57,7 +57,7 @@ The examples require the external libraries `sqlmodel` and `alembic`. They also 
 
 *Using pip:*
 
-```bash
+```
 pip install sqlmodel alembic
 ```
 
@@ -65,7 +65,7 @@ pip install sqlmodel alembic
 
 From the project root, initialise the Alembic migration environment:
 
-```bash
+```
 alembic init _db_migration
 ```
 
@@ -89,7 +89,7 @@ sqlalchemy.url = sqlite:///test.db
 
 Alembic must have access to the model metadata in order to autogenerate migrations. Create a `models` folder in the application's root directory, then edit `_db_migration/env.py` as follows:
 
-```python
+```
 # 1. Import SQLModel
 from sqlmodel import SQLModel
 
@@ -104,7 +104,7 @@ target_metadata = SQLModel.metadata
 
 `SQLModel` uses specific type wrappers. Consequently, generated migration scripts may raise an error unless `sqlmodel` is imported into them. Open `_db_migration/script.py.mako`, the template used to create new migration scripts, and add `import sqlmodel` to the imports section:
 
-```python
+```
 \"\"\"${message}\"\"\"
 revision = '${up_revision}'
 down_revision = '${down_revision}'
@@ -123,104 +123,102 @@ Whenever we create a new model or modify an existing schema, we should follow th
 
 - **Step A: Define or modify the SQLModel**
 
-  Create a new model in the `models` folder. For example, we can create `user_model.py`:
+Create a new model in the `models` folder. For example, we can create `user_model.py`:
 
-  ```python
-  from typing import Optional
-  from sqlmodel import Field, SQLModel
+```python
+from typing import Optional
+from sqlmodel import Field, SQLModel
 
-  class User(SQLModel, table=True):
-      id: Optional[int] = Field(default=None, primary_key=True)
-      username: str = Field(index=True)
-      email: str
-      age: Optional[int] = None  # Added column
-  ```
+class User(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    username: str = Field(index=True)
+    email: str
+    age: Optional[int] = None  # Added column
+```
 
-  Update `__init__.py` to import the new `User` model:
+Update `__init__.py` to import the new `User` model:
 
-  ```python
-  from .user_model import User
-  ```
+```python
+from .user_model import User
+```
 
 - **Step B: Autogenerate the migration script**
 
-  Run the `revision` command with the `--autogenerate` option. Alembic compares the model metadata with the live database schema and writes a proposed migration script to the `_db_migration/versions` folder:
+Run the `revision` command with the `--autogenerate` option. Alembic compares the model metadata with the live database schema and writes a proposed migration script to the `_db_migration/versions` folder:
 
-  ```bash
-  alembic revision --autogenerate -m \"created user table\"
-  ```
+```bash
+alembic revision --autogenerate -m \"created user table\"
+```
 
 - **Step C: Apply the changes to the database**
 
-  Review the generated migration, then use the `upgrade` command to apply it and move the database to the latest revision, known as `head`:
+Review the generated migration, then use the `upgrade` command to apply it and move the database to the latest revision, known as `head`:
 
-  ```bash
-  alembic upgrade head
-  ```
+```bash
+alembic upgrade head
+```
 
 ### Other Useful Alembic Commands
 
 - **Roll back changes**
 
-  Use the `downgrade` command to reverse changes. The following command rolls the database back by one revision:
+Use the `downgrade` command to reverse changes. The following command rolls the database back by one revision:
 
-  ```bash
-  alembic downgrade -1
-  ```
+```bash
+alembic downgrade -1
+```
 
 - **View the revision history**
 
-  Use the `history` command to view the revision history:
+Use the `history` command to view the revision history:
 
-  ```bash
-  alembic history
-  ```
+```bash
+alembic history
+```
 
 - **View the current database revision**
 
-  Use the `current` command to display the latest revision applied to the database:
+Use the `current` command to display the latest revision applied to the database:
 
-  ```bash
-  alembic current
-  ```
+```bash
+alembic current
+```
 
 - **View the current code revision (`head`)**
 
-  Use the `heads` command to display the latest revision in the migration files:
+Use the `heads` command to display the latest revision in the migration files:
 
-  ```bash
-  alembic heads
-  ```
+```bash
+alembic heads
+```
 
 - **Remove a head revision**
 
-  There are three possible situations:
+There are three possible situations:
 
-  1. **The head revision has not yet been applied to the database**
+1. **The head revision has not yet been applied to the database**
+If a migration file was created with `--autogenerate` but `alembic upgrade head` has not been run, the database does not yet reference that revision. Open `_db_migration/versions/`, locate the `.py` file matching the head revision ID, and delete it. The migration history will then return to the previous revision.
 
-     If a migration file was created with `--autogenerate` but `alembic upgrade head` has not been run, the database does not yet reference that revision. Open `_db_migration/versions/`, locate the `.py` file matching the head revision ID, and delete it. The migration history will then return to the previous revision.
+2. **The head revision has already been applied to the database**
+First, downgrade the database. This tells Alembic to reverse the changes made by the head revision and move the database tracker back by one revision:
 
-  2. **The head revision has already been applied to the database**
+```bash
+alembic downgrade -1
+```
 
-     First, downgrade the database. This tells Alembic to reverse the changes made by the head revision and move the database tracker back by one revision:
+Next, delete the head revision `.py` file from the `_db_migration/versions/` folder.
 
-     ```bash
-     alembic downgrade -1
-     ```
+3. **The revision file has been deleted, but the database still refers to it**
 
-     Next, delete the head revision `.py` file from the `_db_migration/versions/` folder.
+The migration can become stuck if the revision file is deleted before the database is downgraded. Alembic then looks for a revision ID whose file no longer exists.
 
-  3. **The revision file has been deleted, but the database still refers to it**
+To resolve this situation, stamp the database with the current head revision:
 
-     The migration can become stuck if the revision file is deleted before the database is downgraded. Alembic then looks for a revision ID whose file no longer exists.
+```bash
+alembic stamp head
+```
 
-     To resolve this situation, stamp the database with the current head revision:
-
-     ```bash
-     alembic stamp head
-     ```
-
-     The `stamp` command does not change the database schema. It updates Alembic's internal revision tracking so that new migrations can be generated again. Use this command only when the database schema already matches the stamped revision.
+The `stamp` command does not change the database schema. It updates Alembic's internal revision tracking so that new migrations can be generated again. Use this command only when the database schema already matches the stamped revision.
 
 ## Conclusion
 
